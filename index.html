@@ -180,6 +180,83 @@
         let totalFocusedMinutes = 0;
         let animationFrame = null;
         let worker = null;
+        let checkInterval = null;
+
+        // Save timer state to localStorage for recovery
+        function saveTimerState() {
+            if (isRunning && endTime) {
+                localStorage.setItem('timerState', JSON.stringify({
+                    endTime,
+                    totalDuration,
+                    isBreakMode,
+                    savedAt: Date.now()
+                }));
+            } else {
+                localStorage.removeItem('timerState');
+            }
+        }
+
+        // Restore timer state from localStorage
+        function restoreTimerState() {
+            const saved = localStorage.getItem('timerState');
+            if (saved) {
+                const state = JSON.parse(saved);
+                const remaining = state.endTime - Date.now();
+                if (remaining > 0) {
+                    endTime = state.endTime;
+                    totalDuration = state.totalDuration;
+                    isBreakMode = state.isBreakMode;
+                    isRunning = true;
+                    
+                    // Restore UI
+                    if (isBreakMode) {
+                        modeIndicator.textContent = 'Breathing Break';
+                        modeIndicator.className = 'mode-indicator break';
+                        timerDisplay.className = 'timer-display break';
+                        progressCircle.classList.add('break');
+                        breathingGuide.classList.add('show');
+                    } else {
+                        modeIndicator.textContent = 'Focus Time';
+                        modeIndicator.className = 'mode-indicator work';
+                        timerDisplay.className = 'timer-display work';
+                    }
+                    
+                    startWorkBtn.style.display = 'none';
+                    startBreakBtn.style.display = 'none';
+                    stopBtn.style.display = 'inline-block';
+                    
+                    // Restart worker/timer
+                    if (worker) {
+                        worker.postMessage({ action: 'start', endTime });
+                    }
+                    startBackupInterval();
+                    updateDisplay(remaining);
+                    return true;
+                } else {
+                    // Timer expired while page was closed
+                    localStorage.removeItem('timerState');
+                    timerComplete();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Backup interval that checks every 5 seconds (survives better than worker sometimes)
+        function startBackupInterval() {
+            clearInterval(checkInterval);
+            checkInterval = setInterval(() => {
+                if (isRunning && endTime) {
+                    const remaining = endTime - Date.now();
+                    if (remaining <= 0) {
+                        timerComplete();
+                    } else {
+                        updateDisplay(remaining);
+                    }
+                    saveTimerState();
+                }
+            }, 5000);
+        }
 
         // Elements
         const timerDisplay = document.getElementById('timerDisplay');
@@ -325,6 +402,8 @@
                 startFallbackTimer();
             }
             
+            startBackupInterval();
+            saveTimerState();
             updateDisplay();
         }
 
@@ -350,6 +429,8 @@
                 startFallbackTimer();
             }
             
+            startBackupInterval();
+            saveTimerState();
             updateDisplay();
         }
 
@@ -361,6 +442,8 @@
                 worker.postMessage({ action: 'stop' });
             }
             cancelAnimationFrame(animationFrame);
+            clearInterval(checkInterval);
+            localStorage.removeItem('timerState');
             
             modeIndicator.textContent = 'Ready';
             modeIndicator.className = 'mode-indicator';
@@ -396,6 +479,8 @@
         function timerComplete() {
             isRunning = false;
             endTime = null;
+            clearInterval(checkInterval);
+            localStorage.removeItem('timerState');
             playNotification();
             
             if (isBreakMode) {
@@ -443,7 +528,11 @@
 
         // Initialize
         loadStats();
-        updateDisplay();
+        
+        // Try to restore timer state (in case page was refreshed/reopened)
+        if (!restoreTimerState()) {
+            updateDisplay();
+        }
 
         // Service worker for PWA
         if ('serviceWorker' in navigator) {
