@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Focus 40/5</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #eee;
+            padding: 20px;
+            user-select: none;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .mode-indicator {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #888;
+            margin-bottom: 10px;
+            transition: color 0.5s ease;
+        }
+
+        .mode-indicator.work {
+            color: #4ecca3;
+        }
+
+        .mode-indicator.break {
+            color: #ff6b6b;
+        }
+
+        .timer-display {
+            font-size: 120px;
+            font-weight: 200;
+            letter-spacing: -5px;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.5s ease;
+        }
+
+        .timer-display.work {
+            color: #4ecca3;
+        }
+
+        .timer-display.break {
+            color: #ff6b6b;
+        }
+
+        .progress-ring {
+            margin: 30px auto;
+            position: relative;
+            width: 280px;
+            height: 280px;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 4;
+        }
+
+        .progress-ring .bg {
+            stroke: #2a2a4a;
+        }
+
+        .progress-ring .progress {
+            stroke: #4ecca3;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+        }
+
+        .progress-ring .progress.break {
+            stroke: #ff6b6b;
+        }
+
+        .timer-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .session-count {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid #4ecca3;
+            color: #4ecca3;
+            padding: 15px 50px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover, .btn:active {
+            background: #4ecca3;
+            color: #1a1a2e;
+        }
+
+        .btn.break-btn {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .btn.break-btn:hover, .btn.break-btn:active {
+            background: #ff6b6b;
+            color: #1a1a2e;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            transform: translateY(-100%);
+            transition: transform 0.5s ease;
+            z-index: 100;
+        }
+
+        .message.show {
+            transform: translateY(0);
+        }
+
+        .message.work-done {
+            background: linear-gradient(135deg, #4ecca3 0%, #3db892 100%);
+            color: #1a1a2e;
+        }
+
+        .message.break-done {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: #fff;
+        }
+
+        .breathing-guide {
+            display: none;
+            margin-top: 20px;
+            font-size: 24px;
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        .breathing-guide.show {
+            display: block;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            25% { opacity: 1; transform: scale(1.1); }
+            50% { opacity: 0.5; transform: scale(1); }
+            75% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+
+        /* Subtle pulse animation when timer ends */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(78, 204, 163, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(78, 204, 163, 0); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease-in-out 3;
+        }
+    </style>
+</head>
+<body>
+    <div class="message" id="message"></div>
+    
+    <div class="container">
+        <div class="mode-indicator" id="modeIndicator">Ready</div>
+        
+        <div class="progress-ring">
+            <svg width="280" height="280">
+                <circle class="bg" cx="140" cy="140" r="130"></circle>
+                <circle class="progress" id="progressCircle" cx="140" cy="140" r="130" 
+                    stroke-dasharray="816.81" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="timer-center">
+                <div class="timer-display" id="timerDisplay">40:00</div>
+                <div class="session-count" id="sessionCount">Session 1</div>
+            </div>
+        </div>
+
+        <div class="breathing-guide" id="breathingGuide">
+            Breathe in... and out... 🧘‍♂️
+        </div>
+
+        <div class="buttons">
+            <button class="btn" id="startWorkBtn" onclick="startWork()">Start Work</button>
+            <button class="btn break-btn" id="startBreakBtn" onclick="startBreak()" style="display:none;">
+                Start Break
+            </button>
+            <button class="btn" id="pauseBtn" onclick="togglePause()" style="display:none;">Pause</button>
+        </div>
+    </div>
+
+    <div class="stats" id="stats">Today: 0 sessions • 0 min focused</div>
+
+    <!-- Subtle notification sound (soft chime) - base64 encoded tiny sound -->
+    <audio id="notificationSound" preload="auto">
+        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYNbRbLAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZB4P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
+    </audio>
+
+    <script>
+        // Configuration
+        const WORK_MINUTES = 40;
+        const BREAK_MINUTES = 5;
+        const CIRCUMFERENCE = 2 * Math.PI * 130; // 816.81
+
+        // State
+        let timeRemaining = WORK_MINUTES * 60;
+        let totalTime = WORK_MINUTES * 60;
+        let isRunning = false;
+        let isPaused = false;
+        let isBreakMode = false;
+        let interval = null;
+        let sessionCount = 1;
+        let totalFocusedMinutes = 0;
+
+        // Elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const progressCircle = document.getElementById('progressCircle');
+        const modeIndicator = document.getElementById('modeIndicator');
+        const message = document.getElementById('message');
+        const startWorkBtn = document.getElementById('startWorkBtn');
+        const startBreakBtn = document.getElementById('startBreakBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const breathingGuide = document.getElementById('breathingGuide');
+        const sessionCountEl = document.getElementById('sessionCount');
+        const stats = document.getElementById('stats');
+        const notificationSound = document.getElementById('notificationSound');
+
+        // Load stats from localStorage
+        function loadStats() {
+            const today = new Date().toDateString();
+            const saved = localStorage.getItem('focusStats');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.date === today) {
+                    sessionCount = data.sessions || 1;
+                    totalFocusedMinutes = data.minutes || 0;
+                }
+            }
+            updateStats();
+        }
+
+        function saveStats() {
+            const today = new Date().toDateString();
+            localStorage.setItem('focusStats', JSON.stringify({
+                date: today,
+                sessions: sessionCount,
+                minutes: totalFocusedMinutes
+            }));
+        }
+
+        function updateStats() {
+            stats.textContent = `Today: ${sessionCount - 1} sessions • ${totalFocusedMinutes} min focused`;
+            sessionCountEl.textContent = `Session ${sessionCount}`;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+            
+            const progress = (totalTime - timeRemaining) / totalTime;
+            const offset = CIRCUMFERENCE * (1 - progress);
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function playNotification() {
+            // Try to play sound
+            notificationSound.volume = 0.3;
+            notificationSound.play().catch(() => {});
+            
+            // Vibrate if supported (mobile)
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+
+            // Request notification permission and show
+            if (Notification.permission === 'granted') {
+                new Notification(isBreakMode ? '🧘‍♂️ Break time!' : '💪 Back to work!', {
+                    body: isBreakMode ? 'Time for breathing exercises' : 'Break is over, let\'s focus!',
+                    icon: '🎯',
+                    silent: true
+                });
+            }
+        }
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message show ${type}`;
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 3000);
+        }
+
+        function startWork() {
+            isBreakMode = false;
+            timeRemaining = WORK_MINUTES * 60;
+            totalTime = WORK_MINUTES * 60;
+            isRunning = true;
+            isPaused = false;
+            
+            modeIndicator.textContent = 'Focus Time';
+            modeIndicator.className = 'mode-indicator work';
+            timerDisplay.className = 'timer-display work';
+            progressCircle.classList.remove('break');
+            breathingGuide.classList.remove('show');
+            
+            startWorkBtn.style.display = 'none';
+            startBreakBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.textContent = 'Pause';
+            
+            updateDisplay();
+            startTimer();
+        }
+
+        function startBreak() {
+            isBreakMode = true;
+            timeRemaining = BREAK_MINUTES * 60;
+            totalTime = BREAK_MINUTES * 60;
+            isRunning = true;
+            isPaused = false;
+            
+            modeIndicator.textContent = 'Breathing Break';
+            modeIndicator.className = 'mode-indicator break';
+            timerDisplay.className = 'timer-display break';
+            progressCircle.classList.add('break');
+            breathingGuide.classList.add('show');
+            
+            startWorkBtn.style.display = 'none';
+            startBreakBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+            pauseBtn.textContent = 'Pause';
+            
+            updateDisplay();
+            startTimer();
+        }
+
+        function togglePause() {
+            if (isPaused) {
+                isPaused = false;
+                pauseBtn.textContent = 'Pause';
+                startTimer();
+            } else {
+                isPaused = true;
+                pauseBtn.textContent = 'Resume';
+                clearInterval(interval);
+            }
+        }
+
+        function startTimer() {
+            clearInterval(interval);
+            interval = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateDisplay();
+                } else {
+                    clearInterval(interval);
+                    timerComplete();
+                }
+            }, 1000);
+        }
+
+        function timerComplete() {
+            isRunning = false;
+            playNotification();
+            
+            if (isBreakMode) {
+                // Break finished
+                showMessage('Break over! Ready to focus? 💪', 'break-done');
+                modeIndicator.textContent = 'Ready to Work';
+                startWorkBtn.style.display = 'inline-block';
+                startBreakBtn.style.display = 'none';
+                breathingGuide.classList.remove('show');
+            } else {
+                // Work session finished
+                totalFocusedMinutes += WORK_MINUTES;
+                sessionCount++;
+                saveStats();
+                updateStats();
+                
+                showMessage('Great focus! Time for breathing 🧘‍♂️', 'work-done');
+                modeIndicator.textContent = 'Take a Break';
+                startWorkBtn.style.display = 'none';
+                startBreakBtn.style.display = 'inline-block';
+                
+                // Add pulse effect
+                document.querySelector('.container').classList.add('pulse');
+                setTimeout(() => {
+                    document.querySelector('.container').classList.remove('pulse');
+                }, 6000);
+            }
+            
+            pauseBtn.style.display = 'none';
+        }
+
+        // Request notification permission on first interaction
+        document.body.addEventListener('click', () => {
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }, { once: true });
+
+        // Initialize
+        loadStats();
+        updateDisplay();
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
