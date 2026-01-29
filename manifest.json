@@ -2,8 +2,8 @@
   "name": "Focus 40/5",
   "short_name": "Focus",
   "description": "40 min work, 5 min breathing break",
-  "start_url": "/focus-timer/",
-  "scope": "/focus-timer/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
@@ -12,7 +12,8 @@
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
