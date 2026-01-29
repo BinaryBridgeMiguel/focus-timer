@@ -9,12 +9,7 @@
     <title>Focus 40/5</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -27,13 +22,7 @@
             padding: 20px;
             user-select: none;
         }
-
-        .container {
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-        }
-
+        .container { text-align: center; width: 100%; max-width: 400px; }
         .mode-indicator {
             font-size: 14px;
             text-transform: uppercase;
@@ -42,15 +31,8 @@
             margin-bottom: 10px;
             transition: color 0.5s ease;
         }
-
-        .mode-indicator.work {
-            color: #4ecca3;
-        }
-
-        .mode-indicator.break {
-            color: #ff6b6b;
-        }
-
+        .mode-indicator.work { color: #4ecca3; }
+        .mode-indicator.break { color: #ff6b6b; }
         .timer-display {
             font-size: 120px;
             font-weight: 200;
@@ -59,45 +41,23 @@
             font-variant-numeric: tabular-nums;
             transition: color 0.5s ease;
         }
-
-        .timer-display.work {
-            color: #4ecca3;
-        }
-
-        .timer-display.break {
-            color: #ff6b6b;
-        }
-
+        .timer-display.work { color: #4ecca3; }
+        .timer-display.break { color: #ff6b6b; }
         .progress-ring {
             margin: 30px auto;
             position: relative;
             width: 280px;
             height: 280px;
         }
-
-        .progress-ring svg {
-            transform: rotate(-90deg);
-        }
-
-        .progress-ring circle {
-            fill: none;
-            stroke-width: 4;
-        }
-
-        .progress-ring .bg {
-            stroke: #2a2a4a;
-        }
-
+        .progress-ring svg { transform: rotate(-90deg); }
+        .progress-ring circle { fill: none; stroke-width: 4; }
+        .progress-ring .bg { stroke: #2a2a4a; }
         .progress-ring .progress {
             stroke: #4ecca3;
             stroke-linecap: round;
-            transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+            transition: stroke 0.5s ease;
         }
-
-        .progress-ring .progress.break {
-            stroke: #ff6b6b;
-        }
-
+        .progress-ring .progress.break { stroke: #ff6b6b; }
         .timer-center {
             position: absolute;
             top: 50%;
@@ -105,13 +65,7 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
-
-        .session-count {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-        }
-
+        .session-count { font-size: 14px; color: #666; margin-top: 10px; }
         .btn {
             background: transparent;
             border: 2px solid #4ecca3;
@@ -125,35 +79,12 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
-
-        .btn:hover, .btn:active {
-            background: #4ecca3;
-            color: #1a1a2e;
-        }
-
-        .btn.break-btn {
-            border-color: #ff6b6b;
-            color: #ff6b6b;
-        }
-
-        .btn.break-btn:hover, .btn.break-btn:active {
-            background: #ff6b6b;
-            color: #1a1a2e;
-        }
-
-        .btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .buttons {
-            margin-top: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
+        .btn:hover, .btn:active { background: #4ecca3; color: #1a1a2e; }
+        .btn.break-btn { border-color: #ff6b6b; color: #ff6b6b; }
+        .btn.break-btn:hover, .btn.break-btn:active { background: #ff6b6b; color: #1a1a2e; }
+        .btn.stop-btn { border-color: #888; color: #888; padding: 10px 30px; font-size: 12px; }
+        .btn.stop-btn:hover { background: #888; color: #1a1a2e; }
+        .buttons { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .message {
             position: fixed;
             top: 0;
@@ -166,58 +97,44 @@
             transition: transform 0.5s ease;
             z-index: 100;
         }
-
-        .message.show {
-            transform: translateY(0);
-        }
-
-        .message.work-done {
-            background: linear-gradient(135deg, #4ecca3 0%, #3db892 100%);
-            color: #1a1a2e;
-        }
-
-        .message.break-done {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
-            color: #fff;
-        }
-
+        .message.show { transform: translateY(0); }
+        .message.work-done { background: linear-gradient(135deg, #4ecca3 0%, #3db892 100%); color: #1a1a2e; }
+        .message.break-done { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); color: #fff; }
         .breathing-guide {
             display: none;
             margin-top: 20px;
             font-size: 24px;
             animation: breathe 8s ease-in-out infinite;
         }
-
-        .breathing-guide.show {
-            display: block;
-        }
-
+        .breathing-guide.show { display: block; }
         @keyframes breathe {
             0%, 100% { opacity: 0.5; transform: scale(1); }
             25% { opacity: 1; transform: scale(1.1); }
             50% { opacity: 0.5; transform: scale(1); }
             75% { opacity: 1; transform: scale(1.1); }
         }
-
-        .stats {
+        .stats { position: fixed; bottom: 20px; font-size: 12px; color: #555; }
+        .bg-notice {
             position: fixed;
-            bottom: 20px;
-            font-size: 12px;
-            color: #555;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            color: #4ecca3;
+            background: rgba(78, 204, 163, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: none;
         }
-
-        /* Subtle pulse animation when timer ends */
+        .bg-notice.show { display: block; }
         @keyframes pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(78, 204, 163, 0.4); }
             50% { box-shadow: 0 0 0 20px rgba(78, 204, 163, 0); }
         }
-
-        .pulse {
-            animation: pulse 2s ease-in-out 3;
-        }
+        .pulse { animation: pulse 2s ease-in-out 3; }
     </style>
 </head>
 <body>
+    <div class="bg-notice" id="bgNotice">✓ Timer runs in background</div>
     <div class="message" id="message"></div>
     
     <div class="container">
@@ -241,35 +158,28 @@
 
         <div class="buttons">
             <button class="btn" id="startWorkBtn" onclick="startWork()">Start Work</button>
-            <button class="btn break-btn" id="startBreakBtn" onclick="startBreak()" style="display:none;">
-                Start Break
-            </button>
-            <button class="btn" id="pauseBtn" onclick="togglePause()" style="display:none;">Pause</button>
+            <button class="btn break-btn" id="startBreakBtn" onclick="startBreak()" style="display:none;">Start Break</button>
+            <button class="btn stop-btn" id="stopBtn" onclick="stopTimer()" style="display:none;">Stop</button>
         </div>
     </div>
 
     <div class="stats" id="stats">Today: 0 sessions • 0 min focused</div>
 
-    <!-- Subtle notification sound (soft chime) - base64 encoded tiny sound -->
-    <audio id="notificationSound" preload="auto">
-        <source src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYNbRbLAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZB4P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" type="audio/mp3">
-    </audio>
-
     <script>
         // Configuration
         const WORK_MINUTES = 40;
         const BREAK_MINUTES = 5;
-        const CIRCUMFERENCE = 2 * Math.PI * 130; // 816.81
+        const CIRCUMFERENCE = 2 * Math.PI * 130;
 
-        // State
-        let timeRemaining = WORK_MINUTES * 60;
-        let totalTime = WORK_MINUTES * 60;
+        // State - using end time instead of counting down (works in background!)
+        let endTime = null;
+        let totalDuration = WORK_MINUTES * 60 * 1000;
         let isRunning = false;
-        let isPaused = false;
         let isBreakMode = false;
-        let interval = null;
         let sessionCount = 1;
         let totalFocusedMinutes = 0;
+        let animationFrame = null;
+        let worker = null;
 
         // Elements
         const timerDisplay = document.getElementById('timerDisplay');
@@ -278,13 +188,56 @@
         const message = document.getElementById('message');
         const startWorkBtn = document.getElementById('startWorkBtn');
         const startBreakBtn = document.getElementById('startBreakBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
         const breathingGuide = document.getElementById('breathingGuide');
         const sessionCountEl = document.getElementById('sessionCount');
         const stats = document.getElementById('stats');
-        const notificationSound = document.getElementById('notificationSound');
+        const bgNotice = document.getElementById('bgNotice');
 
-        // Load stats from localStorage
+        // Create Web Worker for background timing
+        function createWorker() {
+            const workerCode = `
+                let timerId = null;
+                let endTime = null;
+                
+                self.onmessage = function(e) {
+                    if (e.data.action === 'start') {
+                        endTime = e.data.endTime;
+                        clearInterval(timerId);
+                        timerId = setInterval(() => {
+                            const remaining = endTime - Date.now();
+                            if (remaining <= 0) {
+                                clearInterval(timerId);
+                                self.postMessage({ type: 'complete' });
+                            } else {
+                                self.postMessage({ type: 'tick', remaining });
+                            }
+                        }, 100);
+                    } else if (e.data.action === 'stop') {
+                        clearInterval(timerId);
+                    }
+                };
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            return new Worker(URL.createObjectURL(blob));
+        }
+
+        // Initialize worker
+        try {
+            worker = createWorker();
+            worker.onmessage = function(e) {
+                if (e.data.type === 'tick') {
+                    updateDisplay(e.data.remaining);
+                } else if (e.data.type === 'complete') {
+                    timerComplete();
+                }
+            };
+            bgNotice.classList.add('show');
+            setTimeout(() => bgNotice.classList.remove('show'), 3000);
+        } catch (err) {
+            console.log('Worker not supported, using fallback');
+        }
+
         function loadStats() {
             const today = new Date().toDateString();
             const saved = localStorage.getItem('focusStats');
@@ -299,9 +252,8 @@
         }
 
         function saveStats() {
-            const today = new Date().toDateString();
             localStorage.setItem('focusStats', JSON.stringify({
-                date: today,
+                date: new Date().toDateString(),
                 sessions: sessionCount,
                 minutes: totalFocusedMinutes
             }));
@@ -312,54 +264,50 @@
             sessionCountEl.textContent = `Session ${sessionCount}`;
         }
 
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
+        function formatTime(ms) {
+            const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
-        function updateDisplay() {
-            timerDisplay.textContent = formatTime(timeRemaining);
+        function updateDisplay(remainingMs) {
+            if (remainingMs === undefined) {
+                remainingMs = endTime ? Math.max(0, endTime - Date.now()) : totalDuration;
+            }
             
-            const progress = (totalTime - timeRemaining) / totalTime;
+            timerDisplay.textContent = formatTime(remainingMs);
+            
+            const progress = 1 - (remainingMs / totalDuration);
             const offset = CIRCUMFERENCE * (1 - progress);
             progressCircle.style.strokeDashoffset = offset;
         }
 
         function playNotification() {
-            // Try to play sound
-            notificationSound.volume = 0.3;
-            notificationSound.play().catch(() => {});
-            
-            // Vibrate if supported (mobile)
+            // Vibrate if supported
             if (navigator.vibrate) {
-                navigator.vibrate([100, 50, 100]);
+                navigator.vibrate([200, 100, 200, 100, 200]);
             }
 
-            // Request notification permission and show
+            // Show notification
             if (Notification.permission === 'granted') {
-                new Notification(isBreakMode ? '🧘‍♂️ Break time!' : '💪 Back to work!', {
-                    body: isBreakMode ? 'Time for breathing exercises' : 'Break is over, let\'s focus!',
-                    icon: '🎯',
-                    silent: true
-                });
+                const title = isBreakMode ? '🧘‍♂️ Break over!' : '💪 Focus complete!';
+                const body = isBreakMode ? 'Ready to focus again?' : 'Time for a 5 min breathing break!';
+                new Notification(title, { body, icon: '🎯', requireInteraction: true });
             }
         }
 
         function showMessage(text, type) {
             message.textContent = text;
             message.className = `message show ${type}`;
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 3000);
+            setTimeout(() => message.classList.remove('show'), 3000);
         }
 
         function startWork() {
             isBreakMode = false;
-            timeRemaining = WORK_MINUTES * 60;
-            totalTime = WORK_MINUTES * 60;
+            totalDuration = WORK_MINUTES * 60 * 1000;
+            endTime = Date.now() + totalDuration;
             isRunning = true;
-            isPaused = false;
             
             modeIndicator.textContent = 'Focus Time';
             modeIndicator.className = 'mode-indicator work';
@@ -369,19 +317,22 @@
             
             startWorkBtn.style.display = 'none';
             startBreakBtn.style.display = 'none';
-            pauseBtn.style.display = 'inline-block';
-            pauseBtn.textContent = 'Pause';
+            stopBtn.style.display = 'inline-block';
+            
+            if (worker) {
+                worker.postMessage({ action: 'start', endTime });
+            } else {
+                startFallbackTimer();
+            }
             
             updateDisplay();
-            startTimer();
         }
 
         function startBreak() {
             isBreakMode = true;
-            timeRemaining = BREAK_MINUTES * 60;
-            totalTime = BREAK_MINUTES * 60;
+            totalDuration = BREAK_MINUTES * 60 * 1000;
+            endTime = Date.now() + totalDuration;
             isRunning = true;
-            isPaused = false;
             
             modeIndicator.textContent = 'Breathing Break';
             modeIndicator.className = 'mode-indicator break';
@@ -391,51 +342,69 @@
             
             startWorkBtn.style.display = 'none';
             startBreakBtn.style.display = 'none';
-            pauseBtn.style.display = 'inline-block';
-            pauseBtn.textContent = 'Pause';
+            stopBtn.style.display = 'inline-block';
+            
+            if (worker) {
+                worker.postMessage({ action: 'start', endTime });
+            } else {
+                startFallbackTimer();
+            }
             
             updateDisplay();
-            startTimer();
         }
 
-        function togglePause() {
-            if (isPaused) {
-                isPaused = false;
-                pauseBtn.textContent = 'Pause';
-                startTimer();
-            } else {
-                isPaused = true;
-                pauseBtn.textContent = 'Resume';
-                clearInterval(interval);
+        function stopTimer() {
+            isRunning = false;
+            endTime = null;
+            
+            if (worker) {
+                worker.postMessage({ action: 'stop' });
             }
+            cancelAnimationFrame(animationFrame);
+            
+            modeIndicator.textContent = 'Ready';
+            modeIndicator.className = 'mode-indicator';
+            timerDisplay.className = 'timer-display';
+            progressCircle.classList.remove('break');
+            breathingGuide.classList.remove('show');
+            
+            totalDuration = WORK_MINUTES * 60 * 1000;
+            timerDisplay.textContent = formatTime(totalDuration);
+            progressCircle.style.strokeDashoffset = 0;
+            
+            startWorkBtn.style.display = 'inline-block';
+            startBreakBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
         }
 
-        function startTimer() {
-            clearInterval(interval);
-            interval = setInterval(() => {
-                if (timeRemaining > 0) {
-                    timeRemaining--;
-                    updateDisplay();
-                } else {
-                    clearInterval(interval);
+        // Fallback timer for browsers without Worker support
+        function startFallbackTimer() {
+            function tick() {
+                if (!isRunning || !endTime) return;
+                
+                const remaining = endTime - Date.now();
+                if (remaining <= 0) {
                     timerComplete();
+                } else {
+                    updateDisplay(remaining);
+                    animationFrame = requestAnimationFrame(tick);
                 }
-            }, 1000);
+            }
+            tick();
         }
 
         function timerComplete() {
             isRunning = false;
+            endTime = null;
             playNotification();
             
             if (isBreakMode) {
-                // Break finished
                 showMessage('Break over! Ready to focus? 💪', 'break-done');
                 modeIndicator.textContent = 'Ready to Work';
                 startWorkBtn.style.display = 'inline-block';
                 startBreakBtn.style.display = 'none';
                 breathingGuide.classList.remove('show');
             } else {
-                // Work session finished
                 totalFocusedMinutes += WORK_MINUTES;
                 sessionCount++;
                 saveStats();
@@ -446,17 +415,26 @@
                 startWorkBtn.style.display = 'none';
                 startBreakBtn.style.display = 'inline-block';
                 
-                // Add pulse effect
                 document.querySelector('.container').classList.add('pulse');
-                setTimeout(() => {
-                    document.querySelector('.container').classList.remove('pulse');
-                }, 6000);
+                setTimeout(() => document.querySelector('.container').classList.remove('pulse'), 6000);
             }
             
-            pauseBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
         }
 
-        // Request notification permission on first interaction
+        // Handle visibility change - recalculate time when tab becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isRunning && endTime) {
+                const remaining = endTime - Date.now();
+                if (remaining <= 0) {
+                    timerComplete();
+                } else {
+                    updateDisplay(remaining);
+                }
+            }
+        });
+
+        // Request notification permission
         document.body.addEventListener('click', () => {
             if (Notification.permission === 'default') {
                 Notification.requestPermission();
@@ -467,7 +445,7 @@
         loadStats();
         updateDisplay();
 
-        // Register service worker for PWA
+        // Service worker for PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(() => {});
         }
